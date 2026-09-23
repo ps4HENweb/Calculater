@@ -1,100 +1,427 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>CASIO Scientific Calculator</title>
-    <link rel="stylesheet" href="style.css" />
-  </head>
-  <body>
-    <div class="calculator-wrap">
-      <div class="calculator casio">
-        <div class="top-brand">
-          <span class="brand">CASIO</span>
-          <div class="brand-mini">fx-991ES PLUS</div>
-          <div class="brand-sub">NATURAL-V.P.A.M.</div>
-        </div>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Casio Calculator</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(#dfeaf7, #c3d4eb);
+      font-family: Arial, sans-serif;
+    }
 
-        <div class="display-panel">
-          <div class="display-header">
-            <span class="status-btn">DEG</span>
-            <span class="status-btn">FIX</span>
-            <span class="status-btn">M</span>
-          </div>
-          <div id="history" class="history"> </div>
-          <div id="expression" class="expression">0</div>
-          <div id="result" class="result">0</div>
-        </div>
+    .calculator {
+      width: 430px;
+      background: linear-gradient(#f1f1f1, #dfe3ea);
+      border: 3px solid #9aa2aa;
+      border-bottom: 12px solid #818b96;
+      border-radius: 18px 18px 24px 24px;
+      padding: 18px 14px 12px;
+      box-shadow: 0 20px 30px rgba(0,0,0,0.2);
+    }
 
-        <div id="fractionBox" class="fraction-panel hidden">
-          <div class="fraction-title">القسمة بالبسط والمقام</div>
-          <div class="fraction-row">
-            <input id="numerator" type="number" placeholder="البسط" />
-            <span class="divide-bar"></span>
-            <input id="denominator" type="number" placeholder="المقام" />
-          </div>
-          <button id="applyFraction" class="fraction-apply">إدراج الكسر</button>
-        </div>
+    .brand {
+      text-align: center;
+      margin-bottom: 12px;
+    }
 
-        <div class="row mode-row">
-          <button class="mode active" data-mode="basic">BASIC</button>
-          <button class="mode" data-mode="scientific">SCI</button>
-          <button class="mode" data-mode="fraction">a/b</button>
-        </div>
+    .brand .name {
+      font-weight: 900;
+      letter-spacing: 2px;
+      font-size: 2rem;
+    }
 
-        <div id="scientificPad" class="scientific pad hidden">
-          <button data-value="sin(" class="func">sin</button>
-          <button data-value="cos(" class="func">cos</button>
-          <button data-value="tan(" class="func">tan</button>
-          <button data-value="log(" class="func">log</button>
-          <button data-value="ln(" class="func">ln</button>
+    .brand .sub {
+      font-size: 0.7rem;
+      color: #555;
+      letter-spacing: 1px;
+    }
 
-          <button data-value="asin(" class="func">sin⁻¹</button>
-          <button data-value="acos(" class="func">cos⁻¹</button>
-          <button data-value="atan(" class="func">tan⁻¹</button>
-          <button data-value="sqrt(" class="func">√</button>
-          <button data-value="^2" class="func">x²</button>
+    .screen {
+      background: linear-gradient(#d1e0c7, #b8caa8);
+      border: 3px solid #5d6467;
+      border-radius: 8px;
+      padding: 10px 12px;
+      min-height: 120px;
+      box-shadow: inset 0 0 10px rgba(0,0,0,0.2);
+    }
 
-          <button data-value="π" class="func constant">π</button>
-          <button data-value="e" class="func constant">e</button>
-          <button data-value="^" class="func">xʸ</button>
-          <button data-value="!" class="func">n!</button>
-          <button data-value="%" class="func">%</button>
-        </div>
+    .screen-top {
+      display: flex;
+      justify-content: flex-start;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
 
-        <div class="button-grid">
-          <button class="key soft" data-action="clear">AC</button>
-          <button class="key soft" data-action="backspace">DEL</button>
-          <button class="key soft" data-value="(">(</button>
-          <button class="key soft" data-value=")">)</button>
-          <button class="key operator" data-value="÷">÷</button>
+    .pill {
+      background: rgba(0,0,0,0.08);
+      border: 1px solid rgba(0,0,0,0.15);
+      border-radius: 5px;
+      padding: 3px 7px;
+      font-size: 0.7rem;
+      font-weight: bold;
+      color: #2a2f35;
+    }
 
-          <button class="key" data-value="7">7</button>
-          <button class="key" data-value="8">8</button>
-          <button class="key" data-value="9">9</button>
-          <button class="key operator" data-value="×">×</button>
-          <button class="key operator" data-value="−">−</button>
+    .history {
+      min-height: 25px;
+      font-size: 0.9rem;
+      text-align: left;
+      color: rgba(0,0,0,0.6);
+    }
 
-          <button class="key" data-value="4">4</button>
-          <button class="key" data-value="5">5</button>
-          <button class="key" data-value="6">6</button>
-          <button class="key operator" data-value="+">+</button>
-          <button class="key operator" data-value="%">%</button>
+    .expression {
+      min-height: 28px;
+      text-align: left;
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #1b2b1b;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
 
-          <button class="key" data-value="1">1</button>
-          <button class="key" data-value="2">2</button>
-          <button class="key" data-value="3">3</button>
-          <button class="key operator" data-value="^">xʸ</button>
-          <button class="key equals" data-action="equals">=</button>
+    .result {
+      min-height: 35px;
+      text-align: left;
+      font-size: 2.2rem;
+      font-weight: 800;
+      color: #1b2b1b;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
 
-          <button class="key wide" data-value="0">0</button>
-          <button class="key" data-value=".">.</button>
-          <button class="key" data-action="ans">Ans</button>
-          <button class="key" data-action="fraction">a/b</button>
-        </div>
-      </div>
+    .scientific {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 8px;
+      margin: 12px 0 10px;
+    }
+
+    .func-btn, .key {
+      border: 1px solid #bcc4cf;
+      background: linear-gradient(#f8f9fb, #dfe6ee);
+      border-radius: 9px;
+      color: #273749;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.9);
+    }
+
+    .func-btn {
+      height: 34px;
+      font-size: 0.72rem;
+    }
+
+    .keypad {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 9px;
+    }
+
+    .key {
+      height: 48px;
+      font-size: 1.1rem;
+    }
+
+    .key.operator {
+      background: linear-gradient(#f7a962, #de7f2a);
+      color: #fff;
+      border-color: #cf7a24;
+    }
+
+    .key.soft {
+      background: linear-gradient(#eaf1f7, #d4dde8);
+    }
+
+    .key.equals {
+      grid-row: span 2;
+      height: 105px;
+      background: linear-gradient(#f59d59, #d9762f);
+      color: #fff;
+      border-color: #c86829;
+    }
+
+    .key.zero {
+      grid-column: span 2;
+    }
+
+    .fraction-box {
+      display: none;
+      margin: 10px 0 12px;
+      border: 1px solid rgba(0,0,0,0.15);
+      border-radius: 8px;
+      background: rgba(255,255,255,0.25);
+      padding: 12px 10px;
+    }
+
+    .fraction-box.active { display: block; }
+
+    .fraction-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      margin-bottom: 8px;
+    }
+
+    .fraction-row input {
+      width: 120px;
+      height: 34px;
+      border: 1px solid #a7afbb;
+      border-radius: 7px;
+      text-align: center;
+      font-size: 1rem;
+      font-weight: 700;
+    }
+
+    .frac-line {
+      width: 20px;
+      height: 2px;
+      background: #2c3034;
+      position: relative;
+    }
+
+    .frac-line::before, .frac-line::after {
+      content: "";
+      position: absolute;
+      width: 2px;
+      height: 12px;
+      background: #2c3034;
+      top: -5px;
+    }
+
+    .frac-line::before { left: -1px; }
+    .frac-line::after { right: -1px; }
+
+    .fraction-btn {
+      width: 100%;
+      height: 32px;
+      border: none;
+      border-radius: 7px;
+      background: linear-gradient(#f6a158, #df7e2c);
+      color: white;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    @media (max-width: 480px) {
+      .calculator { width: 95vw; }
+      .key { height: 42px; }
+      .key.equals { height: 92px; }
+      .brand .name { font-size: 1.6rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="calculator">
+    <div class="brand">
+      <div class="name">CASIO</div>
+      <div class="sub">fx-991ES PLUS</div>
+      <div class="sub">NATURAL-V.P.A.M.</div>
     </div>
 
-    <script src="script.js"></script>
-  </body>
+    <div class="screen">
+      <div class="screen-top">
+        <span class="pill">DEG</span>
+        <span class="pill">FIX</span>
+      </div>
+      <div id="history" class="history"></div>
+      <div id="expression" class="expression">0</div>
+      <div id="result" class="result">0</div>
+    </div>
+
+    <div id="fractionBox" class="fraction-box">
+      <div class="fraction-row">
+        <input id="numInput" type="number" placeholder="البسط" />
+        <span class="frac-line"></span>
+        <input id="denInput" type="number" placeholder="المقام" />
+      </div>
+      <button class="fraction-btn" id="applyFraction">إدراج الكسر</button>
+    </div>
+
+    <div class="scientific">
+      <button class="func-btn" data-value="sin(">sin</button>
+      <button class="func-btn" data-value="cos(">cos</button>
+      <button class="func-btn" data-value="tan(">tan</button>
+      <button class="func-btn" data-value="log(">log</button>
+      <button class="func-btn" data-value="ln(">ln</button>
+
+      <button class="func-btn" data-value="asin(">sin⁻¹</button>
+      <button class="func-btn" data-value="acos(">cos⁻¹</button>
+      <button class="func-btn" data-value="atan(">tan⁻¹</button>
+      <button class="func-btn" data-value="sqrt(">√</button>
+      <button class="func-btn" data-value="^2">x²</button>
+    </div>
+
+    <div class="keypad">
+      <button class="key soft" data-action="clear">AC</button>
+      <button class="key soft" data-action="backspace">DEL</button>
+      <button class="key soft" data-value="("> ( </button>
+      <button class="key soft" data-value=")"> ) </button>
+      <button class="key operator" data-value="÷">÷</button>
+
+      <button class="key" data-value="7">7</button>
+      <button class="key" data-value="8">8</button>
+      <button class="key" data-value="9">9</button>
+      <button class="key operator" data-value="×">×</button>
+      <button class="key operator" data-value="−">−</button>
+
+      <button class="key" data-value="4">4</button>
+      <button class="key" data-value="5">5</button>
+      <button class="key" data-value="6">6</button>
+      <button class="key operator" data-value="+">+</button>
+      <button class="key operator" data-value="%">%</button>
+
+      <button class="key" data-value="1">1</button>
+      <button class="key" data-value="2">2</button>
+      <button class="key" data-value="3">3</button>
+      <button class="key operator" data-value="^">xʸ</button>
+      <button class="key equals" data-action="equals">=</button>
+
+      <button class="key zero" data-value="0">0</button>
+      <button class="key" data-value=".">.</button>
+      <button class="key" data-action="ans">Ans</button>
+      <button class="key" data-action="fraction">a/b</button>
+    </div>
+  </div>
+
+  <script>
+    const expressionEl = document.getElementById('expression');
+    const resultEl = document.getElementById('result');
+    const historyEl = document.getElementById('history');
+    const fractionBox = document.getElementById('fractionBox');
+    const numInput = document.getElementById('numInput');
+    const denInput = document.getElementById('denInput');
+
+    let expr = '';
+    let lastAnswer = 0;
+
+    function sanitize(exprStr) {
+      return exprStr
+        .replace(/×/g, '*')
+        .replace(/÷/g, '/')
+        .replace(/−/g, '-')
+        .replace(/π/g, 'Math.PI')
+        .replace(/Ans/g, 'lastAnswer')
+        .replace(/sqrt\(/g, 'Math.sqrt(');
+    }
+
+    function evalSafe(str) {
+      let cleaned = sanitize(str);
+      cleaned = cleaned.replace(/sin\(/g, 'Math.sin(')
+                      .replace(/cos\(/g, 'Math.cos(')
+                      .replace(/tan\(/g, 'Math.tan(')
+                      .replace(/asin\(/g, 'Math.asin(')
+                      .replace(/acos\(/g, 'Math.acos(')
+                      .replace(/atan\(/g, 'Math.atan(')
+                      .replace(/log\(/g, 'Math.log10(')
+                      .replace(/ln\(/g, 'Math.log(')
+                      .replace(/\^2/g, '**2')
+                      .replace(/\^/g, '**');
+
+      const fn = new Function('lastAnswer', 'return (' + cleaned + ');');
+      return fn(lastAnswer);
+    }
+
+    function formatValue(value) {
+      if (!Number.isFinite(value)) return 'Error';
+      const v = Number(value.toFixed(10));
+      return String(v);
+    }
+
+    function updateDisplay() {
+      expressionEl.textContent = expr || '0';
+      resultEl.textContent = expr ? '' : formatValue(lastAnswer);
+    }
+
+    function appendValue(value) {
+      expr += value;
+      updateDisplay();
+    }
+
+    function clearAll() {
+      expr = '';
+      historyEl.textContent = '';
+      updateDisplay();
+    }
+
+    function backspace() {
+      expr = expr.slice(0, -1);
+      updateDisplay();
+    }
+
+    function calculate() {
+      if (!expr.trim()) return;
+
+      try {
+        const value = evalSafe(expr);
+        historyEl.textContent = expr + ' =';
+        lastAnswer = value;
+        resultEl.textContent = formatValue(value);
+        expressionEl.textContent = '0';
+        expr = '';
+      } catch (err) {
+        historyEl.textContent = 'خطأ';
+        resultEl.textContent = 'Error';
+      }
+    }
+
+    function showFractionBox() {
+      fractionBox.classList.add('active');
+      numInput.focus();
+    }
+
+    function applyFraction() {
+      const num = Number(numInput.value);
+      const den = Number(denInput.value);
+
+      if (!num || !den || den === 0) {
+        resultEl.textContent = 'خطأ';
+        return;
+      }
+
+      expr = `(${num})/(${den})`;
+      fractionBox.classList.remove('active');
+      updateDisplay();
+      calculate();
+    }
+
+    document.querySelectorAll('[data-value]').forEach(btn => {
+      btn.addEventListener('click', () => appendValue(btn.dataset.value));
+    });
+
+    document.querySelectorAll('[data-action]').forEach(btn => {
+      const action = btn.dataset.action;
+
+      btn.addEventListener('click', () => {
+        if (action === 'clear') clearAll();
+        if (action === 'backspace') backspace();
+        if (action === 'equals') calculate();
+        if (action === 'ans') appendValue('lastAnswer');
+        if (action === 'fraction') showFractionBox();
+      });
+    });
+
+    document.getElementById('applyFraction').addEventListener('click', applyFraction);
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') calculate();
+      if (e.key === 'Backspace') backspace();
+      if (e.key === 'Escape') clearAll();
+
+      if (/[0-9+\-*/().%^]/.test(e.key)) {
+        appendValue(e.key.replace('*', '×').replace('/', '÷').replace('-', '−'));
+      }
+    });
+
+    updateDisplay();
+  </script>
+</body>
 </html>
