@@ -1,16 +1,286 @@
-const $=s=>document.querySelector(s), $$=s=>document.querySelectorAll(s);let expr='',ans=0,angle='DEG',mode='basic';
-const expression=$('#expression'),result=$('#result'),history=$('#history'),fractionBox=$('#fractionBox');
-function render(){expression.textContent=expr||'0';result.textContent=expr?'':formatAnswer(ans);}
-function formatNumber(n){if(!Number.isFinite(n))throw Error('القيمة غير صالحة');if(Math.abs(n)<1e-12)n=0;return Number(n.toFixed(12)).toString()}
-function formatAnswer(n){if(!Number.isFinite(n))return 'خطأ';let s=formatNumber(n),d=1000000;for(let i=1;i<=1000;i++){let x=n*i;if(Math.abs(x-Math.round(x))<1e-9){d=i;break}}let num=Math.round(n*d);if(d>1&&Math.abs(n)<1e7)return `<span class="fraction-result"><span>${num}</span><span>${d}</span></span> <small>(${s})</small>`;return s}
-function append(v){if(expr==='0'&&/^[0-9.]$/.test(v))expr='';expr+=v;result.textContent='';expression.textContent=expr}
-function clear(){expr='';history.textContent='';render()}
-function back(){expr=expr.slice(0,-1);render()}
-function factorial(n){if(n<0||n>170||n%1)return NaN;let r=1;for(let i=2;i<=n;i++)r*=i;return r}
-function tokenize(s){s=s.replaceAll('×','*').replaceAll('÷','/').replaceAll('−','-').replaceAll('π','PI').replaceAll('√','sqrt');let i=0,t=[];while(i<s.length){if(/\s/.test(s[i])){i++;continue}let m=s.slice(i).match(/^(?:\d+(?:\.\d*)?|\.\d+)(?:e[+-]?\d+)?/i);if(m){t.push({v:Number(m[0]),type:'num'});i+=m[0].length;continue}m=s.slice(i).match(/^(sin|cos|tan|asin|acos|atan|log|ln|sqrt|PI|E|e|ans)/i);if(m){t.push({v:m[0].toLowerCase(),type:'word'});i+=m[0].length;continue}if('+-*/^%!()'.includes(s[i])){t.push({v:s[i],type:'op'});i++;continue}throw Error('رمز غير معروف') }return t}
-function evaluate(s){let t=tokenize(s),p=0;const peek=()=>t[p]?.v;function primary(){let v;if(peek()==='-'){p++;return-primary()}if(peek()==='('){p++;v=add();if(peek()!==')')throw Error('قوس ناقص');p++;return v}let z=t[p++];if(!z)throw Error('تعبير ناقص');if(z.type==='num')v=z.v;else if(z.v==='pi')v=Math.PI;else if(z.v==='e')v=Math.E;else if(z.v==='ans')v=ans;else throw Error('دالة ناقصة');return v}function post(){let v=primary();while(peek()==='!'){p++;v=factorial(v)}if(peek()==='%'){p++;v/=100}return v}function power(){let v=post();if(peek()==='^'){p++;v=Math.pow(v,power())}return v}function unary(){let f=peek();if(['sin','cos','tan','asin','acos','atan','log','ln','sqrt'].includes(f)){p++;if(peek()==='('){p++;let v=add();if(peek()!==')')throw Error('قوس ناقص');p++;return fn(f,v)}return fn(f,power())}return power()}function mul(){let v=unary();while(peek()==='*'||peek()==='/'){let o=t[p++].v,b=unary();if(o==='/'&&b===0)throw Error('لا يمكن القسمة على صفر');v=o==='*'?v*b:v/b}return v}function add(){let v=mul();while(peek()==='+'||peek()==='-'){let o=t[p++].v,b=mul();v=o==='+'?v+b:v-b}return v}function fn(f,v){let r=angle==='DEG'?Math.PI/180:1;if(f==='sin')return Math.sin(v*r);if(f==='cos')return Math.cos(v*r);if(f==='tan')return Math.tan(v*r);if(f==='asin')return Math.asin(v)/r;if(f==='acos')return Math.acos(v)/r;if(f==='atan')return Math.atan(v)/r;if(f==='log')return Math.log10(v);if(f==='ln')return Math.log(v);return Math.sqrt(v)}let v=add();if(p<t.length)throw Error('تعبير غير صحيح');return v}
-function calculate(){if(!expr)return;try{let v=evaluate(expr);history.textContent=expr+' =';ans=v;expr='';result.innerHTML=formatAnswer(v)}catch(e){result.textContent=e.message;}}
-function openFraction(){fractionBox.classList.remove('hidden');$('#numerator').value=expr;$('#denominator').focus()}
-$('#applyFraction').onclick=()=>{let n=$('#numerator').value,d=$('#denominator').value;if(!n||!d||Number(d)===0){result.textContent='أدخل بسطاً ومقاماً صالحين';return}expr=`(${n})÷(${d})`;fractionBox.classList.add('hidden');calculate()};
-$$('[data-value]').forEach(b=>b.onclick=()=>append(b.dataset.value));$$('[data-action="clear"]').forEach(b=>b.onclick=clear);$$('[data-action="backspace"]').forEach(b=>b.onclick=back);$$('[data-action="equals"]').forEach(b=>b.onclick=calculate);$$('[data-action="fraction"]').forEach(b=>b.onclick=openFraction);$$('[data-action="ans"]').forEach(b=>b.onclick=()=>append('ans'));
-$$('.mode').forEach(b=>b.onclick=()=>{$$('.mode').forEach(x=>x.classList.remove('active'));b.classList.add('active');mode=b.dataset.mode;$('#scientificPad').classList.toggle('hidden',mode!=='scientific')});$('#angleBtn').onclick=()=>{angle=angle==='DEG'?'RAD':'DEG';$('#angleBtn').textContent=angle};$('#themeBtn').onclick=()=>document.body.classList.toggle('light');document.addEventListener('keydown',e=>{if(/[0-9.+\-*/()^%]/.test(e.key))append(e.key);if(e.key==='Enter')calculate();if(e.key==='Backspace')back();if(e.key==='Escape')clear()});render();
+const expressionEl = document.getElementById('expression');
+const resultEl = document.getElementById('result');
+const historyEl = document.getElementById('history');
+const scientificPad = document.getElementById('scientificPad');
+const fractionBox = document.getElementById('fractionBox');
+const numeratorEl = document.getElementById('numerator');
+const denominatorEl = document.getElementById('denominator');
+
+let expr = '';
+let lastAnswer = 0;
+let angleMode = 'DEG';
+let currentMode = 'basic';
+
+function updateDisplay() {
+  expressionEl.textContent = expr || '0';
+  resultEl.textContent = expr ? '' : formatValue(lastAnswer);
+}
+
+function formatValue(value) {
+  if (!Number.isFinite(value)) return 'Error';
+  const rounded = Number(value.toFixed(10));
+  return String(rounded);
+}
+
+function cleanExpression(raw) {
+  return raw
+    .replace(/×/g, '*')
+    .replace(/÷/g, '/')
+    .replace(/−/g, '-')
+    .replace(/π/g, 'PI')
+    .replace(/√/g, 'sqrt')
+    .replace(/Ans/g, 'lastAnswer');
+}
+
+function factorial(n) {
+  if (n < 0 || n % 1 !== 0) return NaN;
+  let res = 1;
+  for (let i = 2; i <= n; i++) res *= i;
+  return res;
+}
+
+function safeEval(formula) {
+  const normalized = cleanExpression(formula).replace(/\s+/g, '');
+  const tokens = normalized.match(/[0-9]+(?:\.[0-9]+)?|\.|\+|\-|\*|\/|\^|\(|\)|sin|cos|tan|asin|acos|atan|log|ln|sqrt|PI|lastAnswer|!|%/gi);
+
+  if (!tokens || tokens.length === 0) return 0;
+
+  const toRadians = (deg) => angleMode === 'DEG' ? (deg * Math.PI) / 180 : deg;
+
+  const parseExpression = () => {
+    let index = 0;
+
+    function parseAddSubtract() {
+      let value = parseMultiplyDivide();
+      while (index < tokens.length && (tokens[index] === '+' || tokens[index] === '-')) {
+        const op = tokens[index++];
+        const rhs = parseMultiplyDivide();
+        value = op === '+' ? value + rhs : value - rhs;
+      }
+      return value;
+    }
+
+    function parseMultiplyDivide() {
+      let value = parsePower();
+      while (index < tokens.length && (tokens[index] === '*' || tokens[index] === '/')) {
+        const op = tokens[index++];
+        const rhs = parsePower();
+        if (op === '/' && rhs === 0) throw new Error('لا يمكن القسمة على صفر');
+        value = op === '*' ? value * rhs : value / rhs;
+      }
+      return value;
+    }
+
+    function parsePower() {
+      let value = parseUnary();
+      while (index < tokens.length && tokens[index] === '^') {
+        index++;
+        const exp = parseUnary();
+        value = Math.pow(value, exp);
+      }
+      return value;
+    }
+
+    function parseUnary() {
+      if (index < tokens.length && tokens[index] === '-') {
+        index++;
+        return -parseUnary();
+      }
+
+      if (index < tokens.length && tokens[index] === '+') {
+        index++;
+        return parseUnary();
+      }
+
+      return parsePrimary();
+    }
+
+    function parsePrimary() {
+      if (index >= tokens.length) throw new Error('تعبير غير كامل');
+
+      const token = tokens[index];
+      if (/^\d+(?:\.\d+)?$/.test(token)) {
+        index++;
+        return Number(token);
+      }
+
+      const fnMap = {
+        sin: (v) => Math.sin(toRadians(v)),
+        cos: (v) => Math.cos(toRadians(v)),
+        tan: (v) => Math.tan(toRadians(v)),
+        asin: (v) => Math.asin(v) * (angleMode === 'DEG' ? 180 / Math.PI : 1),
+        acos: (v) => Math.acos(v) * (angleMode === 'DEG' ? 180 / Math.PI : 1),
+        atan: (v) => Math.atan(v) * (angleMode === 'DEG' ? 180 / Math.PI : 1),
+        log: (v) => Math.log10(v),
+        ln: (v) => Math.log(v),
+        sqrt: (v) => Math.sqrt(v),
+        PI: () => Math.PI,
+        lastAnswer: () => lastAnswer,
+      };
+
+      if (token.toLowerCase() in fnMap) {
+        index++;
+        const name = token.toLowerCase();
+
+        if (name === 'pi' || name === 'lastanswer') {
+          return fnMap[name]();
+        }
+
+        if (tokens[index] === '(') {
+          index++;
+          const arg = parseAddSubtract();
+          if (tokens[index] !== ')') throw new Error('قوس غير مكتمل');
+          index++;
+          return fnMap[name](arg);
+        }
+
+        const arg = parseUnary();
+        return fnMap[name](arg);
+      }
+
+      if (token === '(') {
+        index++;
+        const value = parseAddSubtract();
+        if (tokens[index] !== ')') throw new Error('قوس غير مكتمل');
+        index++;
+        return value;
+      }
+
+      if (token === '!') {
+        index++;
+        return factorial(parsePrimary());
+      }
+
+      if (token === '%') {
+        index++;
+        return parsePrimary() / 100;
+      }
+
+      throw new Error('رمز غير صحيح');
+    }
+
+    const result = parseAddSubtract();
+    if (index !== tokens.length) {
+      throw new Error('تعبير غير صحيح');
+    }
+    return result;
+  };
+
+  return parseExpression();
+}
+
+function calculate() {
+  if (!expr.trim()) return;
+
+  try {
+    const value = safeEval(expr);
+    historyEl.textContent = `${expr} =`;
+    lastAnswer = value;
+    expr = '';
+    resultEl.textContent = formatValue(value);
+    expressionEl.textContent = '0';
+  } catch (error) {
+    historyEl.textContent = 'خطأ';
+    resultEl.textContent = String(error.message || 'خطأ');
+    expressionEl.textContent = expr;
+  }
+}
+
+function appendValue(value) {
+  expr += value;
+  updateDisplay();
+}
+
+function clearAll() {
+  expr = '';
+  historyEl.textContent = '';
+  updateDisplay();
+}
+
+function backspace() {
+  expr = expr.slice(0, -1);
+  updateDisplay();
+}
+
+function applyFraction() {
+  const n = Number(numeratorEl.value);
+  const d = Number(denominatorEl.value);
+
+  if (!Number.isFinite(n) || !Number.isFinite(d) || d === 0) {
+    resultEl.textContent = 'أدخل بسط ومقام صحيحين';
+    return;
+  }
+
+  expr = `(${n})/(${d})`;
+  fractionBox.classList.add('hidden');
+  updateDisplay();
+  calculate();
+}
+
+function toggleMode(mode) {
+  currentMode = mode;
+  document.querySelectorAll('.mode').forEach((btn) => {
+    btn.classList.toggle('active', btn.dataset.mode === mode);
+  });
+
+  const showScience = mode === 'scientific';
+  scientificPad.classList.toggle('hidden', !showScience);
+
+  if (mode === 'fraction') {
+    fractionBox.classList.remove('hidden');
+    numeratorEl.focus();
+  } else {
+    fractionBox.classList.add('hidden');
+  }
+}
+
+function handleKey(key) {
+  if (/^[0-9]$/.test(key) || ['.', '+', '-', '*', '/', '(', ')', '^', '%', 'π', 'e'].includes(key)) {
+    appendValue(key.replace('*', '×').replace('/', '÷').replace('-', '−'));
+  }
+}
+
+document.querySelectorAll('[data-value]').forEach((button) => {
+  button.addEventListener('click', () => {
+    const value = button.dataset.value;
+    if (value === '^2') {
+      appendValue('^2');
+      return;
+    }
+    appendValue(value);
+  });
+});
+
+document.querySelectorAll('[data-action]').forEach((button) => {
+  const action = button.dataset.action;
+  button.addEventListener('click', () => {
+    if (action === 'clear') clearAll();
+    if (action === 'backspace') backspace();
+    if (action === 'equals') calculate();
+    if (action === 'ans') appendValue('Ans');
+    if (action === 'fraction') {
+      toggleMode('fraction');
+      fractionBox.classList.remove('hidden');
+      numeratorEl.focus();
+    }
+  });
+});
+
+document.getElementById('applyFraction').addEventListener('click', applyFraction);
+document.querySelectorAll('.mode').forEach((btn) => {
+  btn.addEventListener('click', () => toggleMode(btn.dataset.mode));
+});
+
+document.addEventListener('keydown', (event) => {
+  const key = event.key;
+  if (key === 'Enter') calculate();
+  else if (key === 'Backspace') backspace();
+  else if (key === 'Escape') clearAll();
+  else if (key === ' ') event.preventDefault();
+  else if (/[0-9\.+\-\*\/\(\)^%]/.test(key)) {
+    event.preventDefault();
+    appendValue(key.replace('*', '×').replace('/', '÷').replace('-', '−'));
+  }
+});
+
+updateDisplay();
