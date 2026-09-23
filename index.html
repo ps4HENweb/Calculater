@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0b1020">
+  <title>Calculater — الحاسبة العلمية</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="app-shell">
+    <header class="topbar">
+      <div class="brand"><span class="brand-mark">∑</span><div><h1>Calculater</h1><p>حاسبة ذكية ومتقدمة</p></div></div>
+      <div class="top-actions"><button id="angleBtn" class="chip">DEG</button><button id="themeBtn" class="icon-btn" title="تبديل المظهر">☾</button></div>
+    </header>
+
+    <section class="calculator" aria-label="الحاسبة العلمية">
+      <div class="mode-switch" role="tablist"><button class="mode active" data-mode="basic">عادية</button><button class="mode" data-mode="scientific">علمية</button></div>
+      <div class="display-card">
+        <div id="history" class="history"></div>
+        <div id="expression" class="expression" dir="ltr">0</div>
+        <div id="result" class="result" dir="ltr">0</div>
+      </div>
+
+      <div id="fractionBox" class="fraction-box hidden">
+        <div class="fraction-title">إدخال القسمة بالبسط والمقام</div>
+        <div class="fraction-fields" dir="ltr"><input id="numerator" inputmode="decimal" placeholder="البسط"><span class="fraction-line"></span><input id="denominator" inputmode="decimal" placeholder="المقام"></div>
+        <button id="applyFraction" class="apply-fraction">إضافة الكسر</button>
+      </div>
+
+      <div id="scientificPad" class="scientific-pad hidden">
+        <button data-value="sin(" class="function">sin</button><button data-value="cos(" class="function">cos</button><button data-value="tan(" class="function">tan</button><button data-value="log(" class="function">log</button><button data-value="ln(" class="function">ln</button>
+        <button data-value="asin(" class="function">sin⁻¹</button><button data-value="acos(" class="function">cos⁻¹</button><button data-value="atan(" class="function">tan⁻¹</button><button data-value="sqrt(" class="function">√</button><button data-value="^2" class="function">x²</button>
+        <button data-value="π" class="constant">π</button><button data-value="e" class="constant">e</button><button data-value="^" class="operator">xʸ</button><button data-value="!" class="operator">n!</button><button data-value="%" class="operator">%</button>
+      </div>
+
+      <div class="keypad">
+        <button class="utility danger" data-action="clear">AC</button><button class="utility" data-action="backspace">⌫</button><button class="utility" data-value="(">(</button><button class="utility" data-value=")">)</button><button class="operator" data-value="÷">÷</button>
+        <button data-value="7">7</button><button data-value="8">8</button><button data-value="9">9</button><button class="operator" data-value="×">×</button><button class="operator" data-value="−">−</button>
+        <button data-value="4">4</button><button data-value="5">5</button><button data-value="6">6</button><button class="operator" data-value="+">+</button><button class="operator" data-value="%">%</button>
+        <button data-value="1">1</button><button data-value="2">2</button><button data-value="3">3</button><button class="operator" data-value="^">xʸ</button><button class="equals" data-action="equals">=</button>
+        <button class="zero" data-value="0">0</button><button data-value=".">.</button><button class="utility" data-action="ans">ANS</button><button class="fraction-key" data-action="fraction">a⁄b</button>
+      </div>
+    </section>
+    <footer>يدعم الكسور، الدوال المثلثية، الأسس، الجذور، النسب المئوية والذاكرة السابقة</footer>
+  </main>
+  <script src="script.js"></script>
+</body>
+</html>
