@@ -3,483 +3,431 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>حاسبة احترافية</title>
+    <title>حاسبة Casio التفاعلية</title>
     <style>
-        /* التنسيق العام مستوحى من الواجهات العصرية (iOS Style) */
+        /* إعدادات الخطوط والخلفية */
+        @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
+        
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            background-color: #f0f2f5;
+            font-family: 'Segoe UI', Tahoma, Arial, sans-serif;
+            background-color: #2c3e50;
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
             margin: 0;
-            direction: ltr; /* للحفاظ على اتجاه الأرقام والمعادلات */
+            direction: ltr; /* اتجاه الأرقام من اليسار لليمين */
         }
 
+        /* هيكل الحاسبة الخارجي (Casio Style) */
         .calculator {
-            background-color: #1c1c1e;
-            border-radius: 30px;
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
-            width: 340px;
-            padding: 20px;
-            transition: width 0.3s ease;
-            overflow: hidden;
+            background: linear-gradient(135deg, #e0e4e5, #b8bec1);
+            padding: 20px 20px 30px 20px;
+            border-radius: 25px 25px 40px 40px;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.5), inset 0 2px 5px rgba(255,255,255,0.8);
+            width: 320px;
+            border: 2px solid #a1a8aa;
         }
 
-        .calculator.scientific-mode {
-            width: 600px;
-        }
-
-        /* شريط التبديل بين الحاسبة العادية والعلمية */
-        .mode-toggle {
+        /* العلامة التجارية والتبديل */
+        .header {
             display: flex;
-            background-color: #2c2c2e;
-            border-radius: 15px;
-            margin-bottom: 20px;
-            padding: 4px;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
         }
 
-        .mode-toggle button {
-            flex: 1;
-            padding: 10px;
+        .brand {
+            font-weight: bold;
+            font-style: italic;
+            color: #2c3e50;
+            font-size: 18px;
+            letter-spacing: 1px;
+        }
+
+        .mode-switch {
+            background: #2c3e50;
+            color: #fff;
             border: none;
-            background: transparent;
-            color: #8e8e93;
-            font-size: 14px;
-            font-weight: 600;
-            border-radius: 12px;
+            padding: 5px 15px;
+            border-radius: 15px;
             cursor: pointer;
-            transition: 0.3s;
             font-family: inherit;
+            font-size: 12px;
+            font-weight: bold;
         }
 
-        .mode-toggle button.active {
-            background-color: #3a3a3c;
-            color: #ffffff;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-        }
-
-        /* شاشة العرض */
-        .display {
-            text-align: right;
-            padding: 20px 10px;
-            min-height: 100px;
+        /* شاشة الحاسبة */
+        .screen-container {
+            background: #9dbb96; /* لون شاشة الكاسيو */
+            border-radius: 8px;
+            padding: 10px;
+            box-shadow: inset 0 3px 8px rgba(0,0,0,0.4);
+            border: 2px solid #7f8c8d;
+            margin-bottom: 20px;
+            min-height: 80px;
             display: flex;
             flex-direction: column;
-            justify-content: flex-end;
-            word-wrap: break-word;
+            justify-content: space-between;
         }
 
-        .history {
-            color: #8e8e93;
+        .math-input {
+            font-family: 'Share Tech Mono', monospace;
             font-size: 20px;
-            min-height: 24px;
-            margin-bottom: 5px;
+            color: #111;
+            min-height: 40px;
             display: flex;
-            justify-content: flex-end;
             align-items: center;
             flex-wrap: wrap;
-            gap: 5px;
+            line-height: 1.2;
         }
 
-        .current {
-            color: #ffffff;
-            font-size: 48px;
-            font-weight: 300;
-            letter-spacing: -1px;
-            display: flex;
-            justify-content: flex-end;
-            align-items: center;
+        .result-output {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 24px;
+            color: #111;
+            text-align: right;
+            min-height: 28px;
+            font-weight: bold;
         }
 
-        /* تنسيق الكسر (بسط ومقام) */
+        /* تنسيق الكسر المرئي */
         .frac {
             display: inline-flex;
             flex-direction: column;
             align-items: center;
             vertical-align: middle;
             margin: 0 4px;
-            font-size: 0.8em;
+            font-size: 0.85em;
         }
-        
+
         .frac .top {
-            border-bottom: 2px solid #ffffff;
-            padding: 0 4px;
+            border-bottom: 1.5px solid #111;
+            padding: 0 3px;
+            min-width: 12px;
+            min-height: 20px;
+            text-align: center;
         }
-        
+
         .frac .bottom {
-            padding: 0 4px;
+            padding: 0 3px;
+            min-width: 12px;
+            min-height: 20px;
+            text-align: center;
         }
 
-        .history .frac .top { border-bottom: 1.5px solid #8e8e93; }
-
-        /* أزرار الحاسبة */
-        .keypad-wrapper {
-            display: flex;
-            gap: 15px;
+        /* مؤشر الكتابة (Cursor) */
+        .active-box {
+            background-color: rgba(0, 0, 0, 0.15);
+            border-radius: 2px;
+            animation: blink 1.5s infinite;
         }
+        @keyframes blink { 50% { opacity: 0.7; } }
 
-        .keypad {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 12px;
-            flex: 1;
-        }
+        /* منطقة الأزرار */
+        .controls-area { display: flex; flex-direction: column; gap: 12px; }
+        .row { display: flex; justify-content: space-between; gap: 8px; }
 
-        .scientific-keys {
-            display: none;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 12px;
-            flex: 1;
-            border-right: 1px solid #3a3a3c;
-            padding-right: 15px;
-        }
-
-        .calculator.scientific-mode .scientific-keys {
-            display: grid;
-        }
-
-        .btn {
-            background-color: #333336;
-            color: #ffffff;
-            border: none;
-            border-radius: 50%;
-            width: 100%;
-            aspect-ratio: 1;
-            font-size: 24px;
-            font-weight: 400;
-            cursor: pointer;
-            transition: background-color 0.2s, transform 0.1s;
+        /* أزرار التنقل (D-Pad) */
+        .d-pad-container {
             display: flex;
             justify-content: center;
-            align-items: center;
-            font-family: inherit;
+            margin-bottom: 5px;
         }
-
-        .btn:active {
-            transform: scale(0.95);
+        .d-pad {
+            background: #4a535c;
+            border-radius: 50%;
+            width: 80px;
+            height: 80px;
+            position: relative;
+            box-shadow: 0 5px 10px rgba(0,0,0,0.3), inset 0 2px 5px rgba(255,255,255,0.2);
         }
-
-        .btn.operator {
-            background-color: #ff9f0a;
-            color: #ffffff;
-            font-size: 28px;
-        }
-
-        .btn.operator:hover { background-color: #ffb340; }
-
-        .btn.action {
-            background-color: #a5a5a5;
-            color: #000000;
-            font-weight: 500;
-        }
-
-        .btn.action:hover { background-color: #d4d4d4; }
-
-        .btn:hover:not(.operator):not(.action) { background-color: #4a4a4c; }
-
-        .btn.zero {
-            grid-column: span 2;
-            border-radius: 35px;
-            aspect-ratio: auto;
-            justify-content: flex-start;
-            padding-left: 25px;
-        }
-
-        /* تنسيق زر الكسر */
-        .btn-frac {
-            font-size: 20px;
-            display: flex;
-            flex-direction: column;
-            line-height: 1;
-        }
-        .btn-frac hr {
-            width: 60%;
-            margin: 2px 0;
+        .d-btn {
+            position: absolute;
+            background: transparent;
             border: none;
-            border-top: 2px solid white;
+            color: #bdc3c7;
+            font-size: 16px;
+            cursor: pointer;
+            width: 30px; height: 30px;
+            display: flex; justify-content: center; align-items: center;
+        }
+        .d-btn:active { color: #fff; }
+        .d-up { top: 0; left: 25px; }
+        .d-down { bottom: 0; left: 25px; }
+        .d-left { top: 25px; left: 0; }
+        .d-right { top: 25px; right: 0; }
+        .d-center {
+            position: absolute; top: 25px; left: 25px;
+            width: 30px; height: 30px;
+            background: #34495e; border-radius: 50%;
         }
 
-        @media (max-width: 650px) {
-            .calculator.scientific-mode {
-                width: 90vw;
-                border-radius: 20px;
-            }
-            .keypad-wrapper { flex-direction: column; }
-            .scientific-keys { border-right: none; border-bottom: 1px solid #3a3a3c; padding-right: 0; padding-bottom: 15px; }
-            .btn { font-size: 20px; }
+        /* أزرار الآلة */
+        .btn {
+            flex: 1;
+            padding: 8px 0;
+            border-radius: 6px;
+            border: none;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 3px 0 rgba(0,0,0,0.2);
+            transition: transform 0.1s;
         }
+        .btn:active { transform: translateY(3px); box-shadow: 0 0 0; }
+
+        /* ألوان الأزرار (Casio Theme) */
+        .btn-num { background-color: #f1f2f6; color: #2f3542; }
+        .btn-op { background-color: #f1f2f6; color: #2f3542; }
+        .btn-sci { background-color: #2d3436; color: #dfe6e9; font-size: 14px; }
+        .btn-del { background-color: #e15f41; color: #fff; }
+        .btn-eq { background-color: #f1f2f6; color: #2f3542; }
+
+        /* إخفاء الأزرار العلمية في الوضع العادي */
+        .scientific-row { display: flex; }
+        .standard-mode .scientific-row { display: none; }
     </style>
 </head>
 <body>
 
-    <div class="calculator" id="calculator">
-        <!-- أزرار التبديل -->
-        <div class="mode-toggle">
-            <button id="btnStandard" class="active" onclick="setMode('standard')">عادية</button>
-            <button id="btnScientific" onclick="setMode('scientific')">علمية</button>
+    <div class="calculator" id="calcBody">
+        <div class="header">
+            <span class="brand">CASIO </span>
+            <button class="mode-switch" onclick="toggleMode()" id="modeBtn">وضع علمي</button>
         </div>
 
-        <!-- الشاشة -->
-        <div class="display">
-            <div class="history" id="history"></div>
-            <div class="current" id="current">0</div>
+        <div class="screen-container">
+            <!-- مساحة إدخال المعادلة -->
+            <div class="math-input active-box" id="inputContainer"></div>
+            <!-- مساحة إخراج الناتج -->
+            <div class="result-output" id="resultOutput"></div>
         </div>
 
-        <div class="keypad-wrapper">
-            <!-- الأزرار العلمية -->
-            <div class="scientific-keys" id="sciKeys">
-                <button class="btn action" onclick="appendSci('sin(')">sin</button>
-                <button class="btn action" onclick="appendSci('cos(')">cos</button>
-                <button class="btn action" onclick="appendSci('tan(')">tan</button>
-                <button class="btn action" onclick="appendSci('log(')">log</button>
-                
-                <button class="btn action" onclick="appendSci('asin(')">sin⁻¹</button>
-                <button class="btn action" onclick="appendSci('acos(')">cos⁻¹</button>
-                <button class="btn action" onclick="appendSci('atan(')">tan⁻¹</button>
-                <button class="btn action" onclick="appendSci('ln(')">ln</button>
-                
-                <button class="btn action" onclick="appendSci('Math.sqrt(')">√</button>
-                <button class="btn action" onclick="appendOperator('^')">x^y</button>
-                <button class="btn action" onclick="appendSci('Math.PI')">π</button>
-                <button class="btn action" onclick="appendSci('Math.E')">e</button>
-                
-                <button class="btn action" onclick="appendSci('(')">(</button>
-                <button class="btn action" onclick="appendSci(')')">)</button>
-                <button class="btn action" onclick="appendSci('!')">n!</button>
-                <button class="btn action" onclick="appendSci('10^')">10^x</button>
+        <div class="controls-area">
+            
+            <!-- أزرار الاتجاهات (D-Pad) -->
+            <div class="d-pad-container">
+                <div class="d-pad">
+                    <button class="d-btn d-up" onclick="navigate('up')">▲</button>
+                    <button class="d-btn d-down" onclick="navigate('down')">▼</button>
+                    <button class="d-btn d-left" onclick="navigate('left')">◀</button>
+                    <button class="d-btn d-right" onclick="navigate('right')">▶</button>
+                    <div class="d-center"></div>
+                </div>
             </div>
 
-            <!-- الأزرار العادية الأساسية -->
-            <div class="keypad">
-                <button class="btn action" onclick="clearAll()">AC</button>
-                <button class="btn action" onclick="deleteLast()">⌫</button>
-                <!-- زر إدراج الكسر (a/b) -->
-                <button class="btn action btn-frac" onclick="appendFraction()">
-                    <span>a</span><hr><span>b</span>
-                </button>
-                <button class="btn operator" onclick="appendOperator('/')">÷</button>
+            <!-- الصف العلمي الأول (خاصية الكسر دائماً ظاهرة) -->
+            <div class="row">
+                <button class="btn btn-sci" onclick="insertFraction()" style="background:#57606f;">a/b</button>
+                <button class="btn btn-sci scientific-row" onclick="insertText('√(')">√</button>
+                <button class="btn btn-sci scientific-row" onclick="insertText('^')">x²</button>
+                <button class="btn btn-sci scientific-row" onclick="insertText('log(')">log</button>
+                <button class="btn btn-sci scientific-row" onclick="insertText('ln(')">ln</button>
+            </div>
 
-                <button class="btn" onclick="appendNumber('7')">7</button>
-                <button class="btn" onclick="appendNumber('8')">8</button>
-                <button class="btn" onclick="appendNumber('9')">9</button>
-                <button class="btn operator" onclick="appendOperator('*')">×</button>
+            <!-- الصف العلمي الثاني -->
+            <div class="row scientific-row">
+                <button class="btn btn-sci" onclick="insertText('(')">(</button>
+                <button class="btn btn-sci" onclick="insertText(')')">)</button>
+                <button class="btn btn-sci" onclick="insertText('sin(')">sin</button>
+                <button class="btn btn-sci" onclick="insertText('cos(')">cos</button>
+                <button class="btn btn-sci" onclick="insertText('tan(')">tan</button>
+            </div>
 
-                <button class="btn" onclick="appendNumber('4')">4</button>
-                <button class="btn" onclick="appendNumber('5')">5</button>
-                <button class="btn" onclick="appendNumber('6')">6</button>
-                <button class="btn operator" onclick="appendOperator('-')">−</button>
+            <!-- صف الأرقام الأول -->
+            <div class="row">
+                <button class="btn btn-num" onclick="insertText('7')">7</button>
+                <button class="btn btn-num" onclick="insertText('8')">8</button>
+                <button class="btn btn-num" onclick="insertText('9')">9</button>
+                <button class="btn btn-del" onclick="deleteLast()">DEL</button>
+                <button class="btn btn-del" onclick="clearAll()">AC</button>
+            </div>
 
-                <button class="btn" onclick="appendNumber('1')">1</button>
-                <button class="btn" onclick="appendNumber('2')">2</button>
-                <button class="btn" onclick="appendNumber('3')">3</button>
-                <button class="btn operator" onclick="appendOperator('+')">+</button>
+            <!-- صف الأرقام الثاني -->
+            <div class="row">
+                <button class="btn btn-num" onclick="insertText('4')">4</button>
+                <button class="btn btn-num" onclick="insertText('5')">5</button>
+                <button class="btn btn-num" onclick="insertText('6')">6</button>
+                <button class="btn btn-op" onclick="insertText('×')">×</button>
+                <button class="btn btn-op" onclick="insertText('÷')">÷</button>
+            </div>
 
-                <button class="btn zero" onclick="appendNumber('0')">0</button>
-                <button class="btn" onclick="appendNumber('.')">.</button>
-                <button class="btn operator" onclick="calculate()">=</button>
+            <!-- صف الأرقام الثالث -->
+            <div class="row">
+                <button class="btn btn-num" onclick="insertText('1')">1</button>
+                <button class="btn btn-num" onclick="insertText('2')">2</button>
+                <button class="btn btn-num" onclick="insertText('3')">3</button>
+                <button class="btn btn-op" onclick="insertText('+')">+</button>
+                <button class="btn btn-op" onclick="insertText('-')">-</button>
+            </div>
+
+            <!-- صف الأرقام الأخير -->
+            <div class="row">
+                <button class="btn btn-num" onclick="insertText('0')">0</button>
+                <button class="btn btn-num" onclick="insertText('.')">.</button>
+                <button class="btn btn-sci scientific-row" onclick="insertText('π')">π</button>
+                <button class="btn btn-sci scientific-row" onclick="insertText('Ans')">Ans</button>
+                <button class="btn btn-eq" onclick="calculate()">=</button>
             </div>
         </div>
     </div>
 
     <script>
-        let currentInput = '0';
-        let expression = '';
-        let expectingDenominator = false; // تتبع حالة إدخال المقام للكسر
-        let isEvaluated = false;
+        let mainContainer = document.getElementById('inputContainer');
+        let activeContainer = mainContainer; // يحدد أين يكتب المستخدم حالياً (السطر الرئيسي أم البسط أم المقام)
+        let isScientific = true;
+        let lastAns = "0";
 
-        const currentDisplay = document.getElementById('current');
-        const historyDisplay = document.getElementById('history');
-
-        // تبديل الأوضاع
-        function setMode(mode) {
-            const calc = document.getElementById('calculator');
-            const btnStd = document.getElementById('btnStandard');
-            const btnSci = document.getElementById('btnScientific');
-
-            if (mode === 'scientific') {
-                calc.classList.add('scientific-mode');
-                btnSci.classList.add('active');
-                btnStd.classList.remove('active');
+        // تبديل الأوضاع (علمي / عادي)
+        function toggleMode() {
+            const calc = document.getElementById('calcBody');
+            const btn = document.getElementById('modeBtn');
+            isScientific = !isScientific;
+            if (isScientific) {
+                calc.classList.remove('standard-mode');
+                btn.textContent = 'وضع علمي';
             } else {
-                calc.classList.remove('scientific-mode');
-                btnStd.classList.add('active');
-                btnSci.classList.remove('active');
+                calc.classList.add('standard-mode');
+                btn.textContent = 'وضع عادي';
             }
         }
 
-        // تحديث الشاشة وتحويل علامة التقسيم إلى شكل كسر مرئي
-        function updateDisplay() {
-            // معالجة العرض لتشكيل الكسر (البسط والمقام)
-            let displayHTML = currentInput;
+        // تفعيل المؤشر البصري
+        function setActive(element) {
+            document.querySelectorAll('.active-box').forEach(el => el.classList.remove('active-box'));
+            activeContainer = element;
+            activeContainer.classList.add('active-box');
+        }
+
+        // كتابة نص عادي أو أرقام
+        function insertText(val) {
+            let span = document.createElement('span');
+            span.textContent = val;
+            activeContainer.appendChild(span);
+        }
+
+        // إدراج هيكل كسر (بسط ومقام)
+        function insertFraction() {
+            let fracNode = document.createElement('span');
+            fracNode.className = 'frac';
             
-            // إذا كنا في حالة إدخال كسر (المستخدم ضغط a/b)
-            if (displayHTML.includes('frac_start')) {
-                const parts = displayHTML.split('frac_start');
-                const num = parts[0] === '' ? '0' : parts[0];
-                const den = parts[1] === '' ? '...' : parts[1];
-                
-                displayHTML = `
-                    <div class="frac">
-                        <span class="top">${num}</span>
-                        <span class="bottom">${den}</span>
-                    </div>
-                `;
-            }
-
-            currentDisplay.innerHTML = displayHTML;
-            historyDisplay.innerHTML = formatHistory(expression);
+            let topNode = document.createElement('span');
+            topNode.className = 'top';
+            
+            let bottomNode = document.createElement('span');
+            bottomNode.className = 'bottom';
+            
+            fracNode.appendChild(topNode);
+            fracNode.appendChild(bottomNode);
+            
+            activeContainer.appendChild(fracNode);
+            
+            // نقل المؤشر تلقائياً إلى البسط عند إنشاء الكسر
+            setActive(topNode);
         }
 
-        // دالة مساعدة لتنسيق التاريخ (التحويل لرموز رياضية أنيقة)
-        function formatHistory(expr) {
-            let formatted = expr.replace(/\*/g, ' × ').replace(/\//g, ' ÷ ').replace(/\+/g, ' + ').replace(/-/g, ' − ');
-            formatted = formatted.replace(/Math\.sqrt\(/g, '√(').replace(/Math\.PI/g, 'π').replace(/Math\.E/g, 'e');
-            return formatted;
-        }
-
-        // إدخال الأرقام
-        function appendNumber(num) {
-            if (isEvaluated) {
-                currentInput = num;
-                expression = '';
-                isEvaluated = false;
-            } else {
-                if (currentInput === '0' && num !== '.') {
-                    currentInput = num;
-                } else {
-                    currentInput += num;
+        // نظام الملاحة بالأسهم (مثل الكاسيو)
+        function navigate(direction) {
+            if (direction === 'right' || direction === 'down') {
+                if (activeContainer.classList.contains('top')) {
+                    // من البسط للمقام
+                    setActive(activeContainer.nextElementSibling);
+                } else if (activeContainer.classList.contains('bottom')) {
+                    // الخروج من المقام للسطر الرئيسي
+                    setActive(activeContainer.parentElement.parentElement);
+                }
+            } else if (direction === 'left' || direction === 'up') {
+                if (activeContainer.classList.contains('bottom')) {
+                    // من المقام للبسط
+                    setActive(activeContainer.previousElementSibling);
+                } else if (activeContainer.classList.contains('top')) {
+                    // الخروج من الكسر للسطر الرئيسي
+                    setActive(activeContainer.parentElement.parentElement);
                 }
             }
-            updateDisplay();
         }
 
-        // إدخال العمليات الأساسية
-        function appendOperator(op) {
-            isEvaluated = false;
-            
-            // إذا كان هناك كسر قيد التكوين، نحوله إلى عملية قسمة اعتيادية في المعادلة الأساسية
-            if (currentInput.includes('frac_start')) {
-                let parts = currentInput.split('frac_start');
-                let num = parts[0] || '0';
-                let den = parts[1] || '1';
-                expression += `(${num}/${den}) ${op} `;
-            } else {
-                expression += `${currentInput} ${op} `;
-            }
-            
-            currentInput = '0';
-            expectingDenominator = false;
-            updateDisplay();
-        }
-
-        // زر إدخال الكسر a/b
-        function appendFraction() {
-            if (isEvaluated) {
-                expression = '';
-                isEvaluated = false;
-            }
-            // إذا لم يكن هناك كسر بالفعل، نضيف علامة البدء لتنسيق الكسر المرئي
-            if (!currentInput.includes('frac_start')) {
-                currentInput += 'frac_start';
-                expectingDenominator = true;
-                updateDisplay();
-            }
-        }
-
-        // إدخال الدوال العلمية
-        function appendSci(func) {
-            if (isEvaluated) {
-                currentInput = func;
-                expression = '';
-                isEvaluated = false;
-            } else {
-                if (currentInput === '0') currentInput = func;
-                else currentInput += func;
-            }
-            updateDisplay();
-        }
-
-        // مسح الكل (AC)
-        function clearAll() {
-            currentInput = '0';
-            expression = '';
-            expectingDenominator = false;
-            isEvaluated = false;
-            updateDisplay();
-        }
-
-        // مسح آخر خانة (Backspace)
+        // مسح آخر مدخل (DEL)
         function deleteLast() {
-            if (currentInput.length > 1) {
-                if(currentInput.endsWith('frac_start')) {
-                    expectingDenominator = false;
-                    currentInput = currentInput.replace('frac_start', '');
-                } else {
-                    currentInput = currentInput.slice(0, -1);
+            if (activeContainer.lastChild) {
+                activeContainer.removeChild(activeContainer.lastChild);
+            } else {
+                // إذا كان المربع فارغاً، نحاول الخروج للسطر الرئيسي
+                if (activeContainer !== mainContainer) {
+                    let parentFrac = activeContainer.parentElement;
+                    setActive(parentFrac.parentElement);
+                    parentFrac.remove(); // مسح الكسر الفارغ بالكامل
                 }
-            } else {
-                currentInput = '0';
             }
-            updateDisplay();
         }
 
-        // دالة حساب المضروب (Factorial)
-        function factorial(n) {
-            if (n === 0 || n === 1) return 1;
-            for (let i = n - 1; i >= 1; i--) n *= i;
-            return n;
+        // مسح الشاشة (AC)
+        function clearAll() {
+            mainContainer.innerHTML = '';
+            document.getElementById('resultOutput').textContent = '';
+            setActive(mainContainer);
         }
 
-        // حساب النتيجة
+        // دالة تفكيك الشجرة البصرية وتحويلها لمعادلة برمجية
+        function parseDOM(node) {
+            let expression = '';
+            for (let child of node.childNodes) {
+                if (child.nodeType === Node.TEXT_NODE) {
+                    expression += child.nodeValue;
+                } else if (child.classList && child.classList.contains('frac')) {
+                    let topExpr = parseDOM(child.querySelector('.top'));
+                    let botExpr = parseDOM(child.querySelector('.bottom'));
+                    
+                    // منع القسمة على فراغ
+                    if(topExpr === '') topExpr = '0';
+                    if(botExpr === '') botExpr = '1';
+                    
+                    expression += `((${topExpr})/(${botExpr}))`;
+                } else if (child.tagName === 'SPAN') {
+                    expression += child.textContent;
+                }
+            }
+            return expression;
+        }
+
+        // حساب الناتج
         function calculate() {
-            let finalExpression = expression;
-
-            // تحويل هيكل الكسر إلى معادلة قابلة للحساب
-            if (currentInput.includes('frac_start')) {
-                let parts = currentInput.split('frac_start');
-                let num = parts[0] || '0';
-                let den = parts[1] || '1';
-                finalExpression += `(${num}/${den})`;
-            } else {
-                finalExpression += currentInput;
-            }
-
-            // معالجة الدوال الخاصة قبل الـ eval
-            // تحويل sin(30) إلى راديان لأن دوال الجافاسكريبت تعمل بالراديان، لكن للحاسبات نفضل الدرجات
-            let evalString = finalExpression
-                .replace(/sin\(/g, 'Math.sin((Math.PI/180)*')
-                .replace(/cos\(/g, 'Math.cos((Math.PI/180)*')
-                .replace(/tan\(/g, 'Math.tan((Math.PI/180)*')
-                .replace(/asin\(/g, '(180/Math.PI)*Math.asin(')
-                .replace(/acos\(/g, '(180/Math.PI)*Math.acos(')
-                .replace(/atan\(/g, '(180/Math.PI)*Math.atan(')
-                .replace(/log\(/g, 'Math.log10(')
-                .replace(/ln\(/g, 'Math.log(')
-                .replace(/\^/g, '**')
-                .replace(/([0-9]+)!/g, 'factorial($1)');
+            // تحويل الشكل المرئي إلى سلسلة نصية
+            let mathString = parseDOM(mainContainer);
+            
+            // معالجة الرموز الرياضية للغات البرمجة
+            mathString = mathString.replace(/×/g, '*')
+                                   .replace(/÷/g, '/')
+                                   .replace(/π/g, 'Math.PI')
+                                   .replace(/Ans/g, lastAns);
+            
+            // معالجة الدوال العلمية (مع تحويل الدرجات لراديان)
+            mathString = mathString.replace(/sin\(/g, 'Math.sin((Math.PI/180)*')
+                                   .replace(/cos\(/g, 'Math.cos((Math.PI/180)*')
+                                   .replace(/tan\(/g, 'Math.tan((Math.PI/180)*')
+                                   .replace(/log\(/g, 'Math.log10(')
+                                   .replace(/ln\(/g, 'Math.log(')
+                                   .replace(/√\(/g, 'Math.sqrt(')
+                                   .replace(/\^/g, '**');
 
             try {
-                // استخدام Function بدلاً من eval لأمان أكثر قليلاً وتنفيذ رياضي
-                let result = new Function('factorial', 'return ' + evalString)(factorial);
+                // تقييم المعادلة
+                let result = new Function('return ' + mathString)();
                 
-                // تنسيق الناتج لتجنب الأرقام الطويلة جداً
-                if (result % 1 !== 0) {
+                // تنسيق الأرقام العشرية الطويلة
+                if (!Number.isInteger(result)) {
                     result = parseFloat(result.toFixed(8));
                 }
-
-                historyDisplay.innerHTML = formatHistory(finalExpression) + ' =';
-                currentInput = result.toString();
-                expression = '';
-                isEvaluated = true;
-                expectingDenominator = false;
                 
-                // عرض النتيجة
-                currentDisplay.innerHTML = currentInput;
+                document.getElementById('resultOutput').textContent = result;
+                lastAns = result; // حفظ الإجابة لزر Ans
+                
+                // إرجاع المؤشر للسطر الرئيسي
+                setActive(mainContainer);
             } catch (error) {
-                currentDisplay.innerHTML = '<span style="color:#ff453a; font-size:30px;">Error / خطأ رياضي</span>';
-                setTimeout(clearAll, 2000);
+                document.getElementById('resultOutput').textContent = "Syntax Error";
+                setActive(mainContainer);
             }
         }
     </script>
